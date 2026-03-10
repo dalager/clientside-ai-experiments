@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Emoji Finder — Semantic Search Demo</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+      background: #0c0a1a;
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+
+    h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #f59e0b, #ec4899, #8b5cf6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      color: #64748b;
+      font-size: 0.85rem;
+      margin-top: 0.35rem;
+    }
+
+    .stats {
+      display: flex;
+      gap: 1.5rem;
+      margin: 0.75rem 0 1.25rem;
+      font-size: 0.75rem;
+      color: #64748b;
+    }
+
+    .stat-value { color: #a78bfa; font-weight: 600; }
+
+    #search-box {
+      width: 100%;
+      max-width: 520px;
+      padding: 0.85rem 1.25rem;
+      border-radius: 9999px;
+      border: 2px solid #1e1b3a;
+      background: #13112b;
+      color: #f1f5f9;
+      font-size: 1.05rem;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    #search-box:focus {
+      border-color: #8b5cf6;
+      box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+    }
+
+    #search-box::placeholder { color: #4a4570; }
+
+    #status {
+      margin: 0.75rem 0;
+      font-size: 0.8rem;
+      color: #64748b;
+      min-height: 1.2em;
+    }
+
+    #results {
+      width: 100%;
+      max-width: 520px;
+      margin-top: 0.5rem;
+    }
+
+    .result {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      background: #13112b;
+      border: 1px solid #1e1b3a;
+      border-radius: 0.75rem;
+      padding: 0.65rem 0.85rem;
+      margin-bottom: 0.4rem;
+      transition: border-color 0.15s, transform 0.1s;
+    }
+
+    .result:hover {
+      border-color: #8b5cf6;
+      transform: translateX(2px);
+    }
+
+    .emoji {
+      font-size: 2rem;
+      line-height: 1;
+      min-width: 2.5rem;
+      text-align: center;
+    }
+
+    .info { flex: 1; min-width: 0; }
+
+    .name {
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: #e2e8f0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .tags {
+      font-size: 0.7rem;
+      color: #64748b;
+      margin-top: 0.15rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .bar-bg {
+      height: 3px;
+      background: #1e1b3a;
+      border-radius: 2px;
+      margin-top: 0.3rem;
+      overflow: hidden;
+    }
+
+    .bar {
+      height: 100%;
+      border-radius: 2px;
+      background: linear-gradient(90deg, #8b5cf6, #ec4899);
+      transition: width 0.3s ease;
+    }
+
+    .score {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #a78bfa;
+      min-width: 2.5rem;
+      text-align: right;
+    }
+
+    .empty {
+      text-align: center;
+      padding: 2rem;
+      color: #4a4570;
+    }
+
+    .suggestions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      justify-content: center;
+      padding: 0.5rem 0;
+    }
+
+    .chip {
+      background: #1e1b3a;
+      border: 1px solid #2d2a4a;
+      border-radius: 9999px;
+      padding: 0.35rem 0.85rem;
+      font-size: 0.8rem;
+      color: #a5b4fc;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+      font-family: inherit;
+    }
+
+    .chip:hover {
+      background: #2d2a4a;
+      border-color: #8b5cf6;
+    }
+
+    .explainer {
+      max-width: 520px;
+      margin-top: 2rem;
+      padding: 1rem 1.25rem;
+      background: #13112b;
+      border: 1px solid #1e1b3a;
+      border-radius: 0.75rem;
+      font-size: 0.78rem;
+      color: #64748b;
+      line-height: 1.6;
+    }
+
+    .explainer strong { color: #a78bfa; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Emoji Finder</h1>
+    <p class="subtitle">Semantic search — find emojis by meaning, not exact keywords</p>
+  </div>
+
+  <div class="stats">
+    <span>Emojis: <span id="emoji-count" class="stat-value">—</span></span>
+    <span>Dimensions: <span id="dim-count" class="stat-value">—</span></span>
+    <span>Index built in: <span id="load-time" class="stat-value">—</span></span>
+  </div>
+
+  <input type="text" id="search-box" placeholder="Try: feeling grateful, bad weather, working hard..." disabled>
+  <div id="status">Initializing...</div>
+  <div id="results"></div>
+
+  <div class="explainer">
+    <strong>How it works:</strong> Each emoji has a description converted into a 512-dimensional
+    vector using feature hashing. Your query is converted the same way, then a WASM-powered
+    HNSW graph search finds the nearest emoji vectors in sub-millisecond time.
+    Everything runs locally in your browser — no server, no API calls, fully private.
+  </div>
+
+  <script type="module" src="./main.js"></script>
+</body>
+</html>

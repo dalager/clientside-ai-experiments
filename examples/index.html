@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>wasmllm — Browser-Native AI Demos</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+      background: #0c0a1a;
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 3rem 1rem;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #22d3ee, #6366f1, #ec4899);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      color: #64748b;
+      font-size: 1rem;
+      margin-top: 0.5rem;
+      text-align: center;
+      max-width: 500px;
+      line-height: 1.5;
+    }
+
+    .demos {
+      display: grid;
+      gap: 1rem;
+      margin-top: 2.5rem;
+      width: 100%;
+      max-width: 640px;
+    }
+
+    a.card {
+      display: block;
+      text-decoration: none;
+      background: #13112b;
+      border: 1px solid #1e1b3a;
+      border-radius: 0.85rem;
+      padding: 1.5rem;
+      transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
+    }
+
+    a.card:hover {
+      border-color: #6366f1;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(99, 102, 241, 0.1);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .card-icon { font-size: 1.6rem; }
+
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #f1f5f9;
+    }
+
+    .card-desc {
+      font-size: 0.85rem;
+      color: #94a3b8;
+      line-height: 1.5;
+    }
+
+    .card-tags {
+      display: flex;
+      gap: 0.4rem;
+      margin-top: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .tag {
+      font-size: 0.7rem;
+      padding: 0.15rem 0.5rem;
+      border-radius: 9999px;
+      background: #1e1b3a;
+      color: #a5b4fc;
+      border: 1px solid #2d2a4a;
+    }
+
+    .footer {
+      margin-top: 3rem;
+      font-size: 0.75rem;
+      color: #4a4570;
+      text-align: center;
+      line-height: 1.6;
+    }
+
+    .footer a { color: #6366f1; text-decoration: none; }
+    .footer a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <h1>wasmllm</h1>
+  <p class="subtitle">
+    Browser-native AI demos powered by WebAssembly. No servers, no API keys, no data leaves your device.
+  </p>
+
+  <div class="demos">
+    <a class="card" href="./vanilla/">
+      <div class="card-header">
+        <span class="card-icon">&#x1F50D;</span>
+        <span class="card-title">Vector Search</span>
+      </div>
+      <p class="card-desc">
+        Sub-millisecond nearest-neighbor search over 1,000 vectors using HNSW graph traversal
+        in a 42 KB WASM microkernel.
+      </p>
+      <div class="card-tags">
+        <span class="tag">WASM</span>
+        <span class="tag">HNSW</span>
+        <span class="tag">RVF</span>
+        <span class="tag">sub-1ms</span>
+      </div>
+    </a>
+
+    <a class="card" href="./emoji-finder/">
+      <div class="card-header">
+        <span class="card-icon">&#x1F60A;</span>
+        <span class="card-title">Emoji Finder</span>
+      </div>
+      <p class="card-desc">
+        Semantic emoji search — type a feeling, concept or word and find matching emojis
+        by meaning, not exact keywords. 130+ emojis indexed in-browser.
+      </p>
+      <div class="card-tags">
+        <span class="tag">WASM</span>
+        <span class="tag">feature hashing</span>
+        <span class="tag">cosine similarity</span>
+      </div>
+    </a>
+
+    <a class="card" href="./ner-extractor/">
+      <div class="card-header">
+        <span class="card-icon">&#x1F3F7;&#xFE0F;</span>
+        <span class="card-title">Dansk Navnegenkendelse (NER)</span>
+      </div>
+      <p class="card-desc">
+        Find personer, organisationer og steder i dansk tekst. En BERT-model (~180 MB) k&oslash;rer
+        direkte i browseren via ONNX Runtime — ingen data sendes til en server.
+      </p>
+      <div class="card-tags">
+        <span class="tag">Transformers.js</span>
+        <span class="tag">ONNX</span>
+        <span class="tag">BERT</span>
+        <span class="tag">dansk</span>
+        <span class="tag">NER</span>
+      </div>
+    </a>
+  </div>
+
+  <div class="footer">
+    All demos run entirely in your browser.<br>
+    Powered by <a href="https://github.com/ruvnet/ruvector">@ruvector/rvf-wasm</a>
+    and <a href="https://huggingface.co/docs/transformers.js">Transformers.js</a>
+  </div>
+</body>
+</html>

@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dansk NER — Genkendelse af navne direkte i browseren</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+      background: #0c0a1a;
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem;
+    }
+
+    .header { text-align: center; margin-bottom: 1.5rem; }
+
+    h1 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #22d3ee, #6366f1, #a855f7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle { color: #64748b; font-size: 0.85rem; margin-top: 0.35rem; }
+
+    .container { width: 100%; max-width: 640px; }
+
+    textarea {
+      width: 100%;
+      min-height: 120px;
+      padding: 1rem;
+      border-radius: 0.75rem;
+      border: 2px solid #1e1b3a;
+      background: #13112b;
+      color: #f1f5f9;
+      font-size: 0.95rem;
+      font-family: inherit;
+      line-height: 1.6;
+      resize: vertical;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    textarea:focus { border-color: #6366f1; }
+    textarea::placeholder { color: #4a4570; }
+
+    .actions {
+      display: flex;
+      gap: 0.75rem;
+      margin: 0.75rem 0;
+      align-items: center;
+    }
+
+    button {
+      padding: 0.6rem 1.5rem;
+      border-radius: 0.5rem;
+      border: none;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+      font-family: inherit;
+    }
+
+    button:active { transform: scale(0.97); }
+    button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #6366f1, #a855f7);
+      color: white;
+    }
+
+    .btn-example {
+      background: #1e1b3a;
+      color: #a5b4fc;
+      border: 1px solid #2d2a4a;
+      padding: 0.4rem 0.8rem;
+      font-size: 0.8rem;
+      font-weight: 400;
+    }
+
+    .btn-example:hover { border-color: #6366f1; }
+
+    #status {
+      font-size: 0.8rem;
+      color: #64748b;
+      margin-left: auto;
+      min-width: 0;
+    }
+
+    #annotated {
+      margin-top: 1rem;
+      padding: 1.25rem;
+      background: #13112b;
+      border: 1px solid #1e1b3a;
+      border-radius: 0.75rem;
+      font-size: 0.95rem;
+      line-height: 2;
+      min-height: 3rem;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    .entity {
+      padding: 0.15rem 0.4rem;
+      border-radius: 0.35rem;
+      font-weight: 500;
+      position: relative;
+      cursor: default;
+    }
+
+    .entity-PER { background: rgba(59, 130, 246, 0.25); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.4); }
+    .entity-ORG { background: rgba(16, 185, 129, 0.25); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.4); }
+    .entity-LOC { background: rgba(245, 158, 11, 0.25); color: #fcd34d; border: 1px solid rgba(245, 158, 11, 0.4); }
+    .entity-MISC { background: rgba(168, 85, 247, 0.25); color: #c4b5fd; border: 1px solid rgba(168, 85, 247, 0.4); }
+
+    .entity-label {
+      font-size: 0.6rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      margin-left: 0.25rem;
+      opacity: 0.7;
+      vertical-align: super;
+    }
+
+    .legend {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.75rem;
+      color: #94a3b8;
+    }
+
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 3px;
+    }
+
+    .dot-PER { background: #3b82f6; }
+    .dot-ORG { background: #10b981; }
+    .dot-LOC { background: #f59e0b; }
+    .dot-MISC { background: #a855f7; }
+
+    #entity-list {
+      margin-top: 1rem;
+      display: grid;
+      gap: 0.35rem;
+    }
+
+    .entity-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.4rem 0.6rem;
+      background: #13112b;
+      border: 1px solid #1e1b3a;
+      border-radius: 0.5rem;
+      font-size: 0.85rem;
+    }
+
+    .entity-row .tag {
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 0.1rem 0.4rem;
+      border-radius: 0.25rem;
+      min-width: 2.5rem;
+      text-align: center;
+    }
+
+    .tag-PER { background: rgba(59, 130, 246, 0.3); color: #93c5fd; }
+    .tag-ORG { background: rgba(16, 185, 129, 0.3); color: #6ee7b7; }
+    .tag-LOC { background: rgba(245, 158, 11, 0.3); color: #fcd34d; }
+    .tag-MISC { background: rgba(168, 85, 247, 0.3); color: #c4b5fd; }
+
+    .entity-row .word { color: #e2e8f0; }
+    .entity-row .conf { color: #64748b; font-size: 0.75rem; margin-left: auto; font-family: monospace; }
+
+    .progress-bar {
+      width: 100%;
+      height: 4px;
+      background: #1e1b3a;
+      border-radius: 2px;
+      overflow: hidden;
+      margin: 0.5rem 0;
+      display: none;
+    }
+
+    .progress-bar.active { display: block; }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #6366f1, #a855f7);
+      border-radius: 2px;
+      transition: width 0.3s;
+      width: 0%;
+    }
+
+    .explainer {
+      margin-top: 2rem;
+      padding: 1rem 1.25rem;
+      background: #13112b;
+      border: 1px solid #1e1b3a;
+      border-radius: 0.75rem;
+      font-size: 0.78rem;
+      color: #64748b;
+      line-height: 1.6;
+    }
+
+    .explainer strong { color: #a78bfa; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Client-side NER Extraction på dansk</h1>
+    <p class="subtitle">Find personer, organisationer og steder i tekst — alt sker lokalt i din browser</p>
+  </div>
+
+  <div class="container">
+    <textarea id="input" placeholder="Skriv eller inds&aelig;t dansk tekst her..."></textarea>
+
+    <div class="actions">
+      <button class="btn-primary" id="extract-btn" disabled>Find entiteter</button>
+      <button class="btn-example" data-text="Jens Peter Hansen bor i K&oslash;benhavn og arbejder hos Novo Nordisk. Han m&oslash;des med Mette Frederiksen p&aring; Christiansborg n&aelig;ste tirsdag.">Eksempel 1</button>
+      <button class="btn-example" data-text="Danmarks Tekniske Universitet i Lyngby har indg&aring;et et samarbejde med Carlsberg om forskning i b&aelig;redygtig produktion. Projektet ledes af professor Maria Nielsen.">Eksempel 2</button>
+      <button class="btn-example" data-text="FC K&oslash;benhavn slog Br&oslash;ndby IF med 3-1 i Parken s&oslash;ndag aften. Mikkel Hansen scorede to m&aring;l.">Eksempel 3</button>
+      <span id="status">Indl&aelig;ser model...</span>
+    </div>
+
+    <div class="progress-bar" id="progress">
+      <div class="progress-fill" id="progress-fill"></div>
+    </div>
+
+    <div id="annotated"></div>
+
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot dot-PER"></div> Person</div>
+      <div class="legend-item"><div class="legend-dot dot-ORG"></div> Organisation</div>
+      <div class="legend-item"><div class="legend-dot dot-LOC"></div> Sted / Lokation</div>
+      <div class="legend-item"><div class="legend-dot dot-MISC"></div> Andet</div>
+    </div>
+
+    <div id="entity-list"></div>
+
+    <div class="explainer">
+      <strong>S&aring;dan virker det:</strong> En flersproget BERT-model (tr&aelig;net til navnegenkendelse)
+      k&oslash;rer direkte i din browser via ONNX Runtime + Transformers.js. Den finder personer,
+      organisationer og steder i teksten. Modellen er ca. 180 MB og caches efter f&oslash;rste indl&aelig;sning.
+      Ingen data sendes til en server — alt foreg&aring;r lokalt.
+    </div>
+  </div>
+
+  <script type="module" src="./main.js"></script>
+</body>
+</html>

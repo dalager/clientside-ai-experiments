@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Browser-Native Semantic Search</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, -apple-system, sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 2rem; }
+    h1 { font-size: 1.5rem; margin-bottom: 0.5rem; color: #f8fafc; }
+    .subtitle { color: #94a3b8; margin-bottom: 2rem; font-size: 0.875rem; }
+    #search-box { width: 100%; max-width: 600px; padding: 0.75rem 1rem; border-radius: 0.5rem; border: 1px solid #334155; background: #1e293b; color: #f1f5f9; font-size: 1rem; outline: none; transition: border-color 0.2s; }
+    #search-box:focus { border-color: #6366f1; }
+    #status { margin: 1rem 0; font-size: 0.8rem; color: #64748b; }
+    #results { width: 100%; max-width: 600px; margin-top: 1rem; }
+    .result { background: #1e293b; border: 1px solid #334155; border-radius: 0.5rem; padding: 1rem; margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center; }
+    .result-id { font-family: monospace; color: #a5b4fc; }
+    .result-score { font-family: monospace; color: #34d399; font-size: 0.875rem; }
+    .stats { display: flex; gap: 1.5rem; margin: 1rem 0; font-size: 0.8rem; color: #94a3b8; }
+    .stat-value { color: #6366f1; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <h1>Browser-Native Semantic Search</h1>
+  <p class="subtitle">Zero-backend vector search powered by WASM + RVF</p>
+
+  <div class="stats">
+    <span>Vectors: <span id="vec-count" class="stat-value">—</span></span>
+    <span>Dimensions: <span id="dim-count" class="stat-value">—</span></span>
+    <span>Load time: <span id="load-time" class="stat-value">—</span></span>
+  </div>
+
+  <input type="text" id="search-box" placeholder="Type a query..." disabled>
+  <div id="status">Initializing WASM runtime...</div>
+  <div id="results"></div>
+
+  <script type="module" src="./main.js"></script>
+</body>
+</html>

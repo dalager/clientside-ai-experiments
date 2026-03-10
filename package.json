@@ -1,0 +1,36 @@
+{
+  "name": "wasmllm",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p config/tsconfig.json",
+    "dev": "vite --config config/vite.config.ts",
+    "test": "vitest run --config config/vitest.config.ts",
+    "test:watch": "vitest --config config/vitest.config.ts",
+    "lint": "tsc -p config/tsconfig.json --noEmit"
+  },
+  "keywords": [
+    "wasm",
+    "vector-search",
+    "hnsw",
+    "rvf",
+    "semantic-search"
+  ],
+  "author": "",
+  "license": "ISC",
+  "description": "Browser-native semantic search powered by WASM + RVF",
+  "dependencies": {
+    "@huggingface/transformers": "^3.8.1",
+    "@ruvector/rvf-wasm": "^0.1.6"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.58.2",
+    "@types/node": "^25.4.0",
+    "@vitest/browser": "^4.0.18",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.1",
+    "vitest": "^4.0.18"
+  }
+}
