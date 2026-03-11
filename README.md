@@ -1,4 +1,4 @@
-# wasmllm
+# Client-side AI Experiments 
 
 Client-side AI playground — browser-native ML demos powered by WebAssembly. No servers, no API keys, no data leaves your device.
 
@@ -8,7 +8,9 @@ Client-side AI playground — browser-native ML demos powered by WebAssembly. No
 |------|-------------|------|
 | [Vector Search](examples/vanilla/) | Sub-ms nearest-neighbor search over 1,000 vectors using HNSW graph traversal in a 42 KB WASM microkernel | @ruvector/rvf-wasm |
 | [Emoji Finder](examples/emoji-finder/) | Semantic emoji search — type a feeling or concept and find matching emojis by meaning, not keywords | Feature hashing + WASM HNSW |
+| [Semantic Search](examples/semantic-search/) | Semantic movie search in Danish — type a description and find matching films by meaning using in-browser embeddings | Transformers.js (gte-small) |
 | [Dansk NER](examples/ner-extractor/) | Find persons, organizations and locations in Danish text using a ModernBERT model (~144 MB) running entirely in-browser | Transformers.js + ONNX Runtime |
+
 
 ## Quick start
 

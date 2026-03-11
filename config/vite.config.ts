@@ -11,6 +11,7 @@ export default defineConfig({
         vanilla: resolve(__dirname, '../examples/vanilla/index.html'),
         emoji: resolve(__dirname, '../examples/emoji-finder/index.html'),
         ner: resolve(__dirname, '../examples/ner-extractor/index.html'),
+        semanticSearch: resolve(__dirname, '../examples/semantic-search/index.html'),
       },
     },
   },
