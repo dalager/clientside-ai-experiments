@@ -16,7 +16,7 @@ let nerPipeline = null;
 // --- Model loading ---
 
 async function loadModel() {
-  statusEl.textContent = 'Henter model (~180 MB, caches efter f\u00f8rste gang)...';
+  statusEl.textContent = 'Henter model (~144 MB, caches efter f\u00f8rste gang)...';
   progressBar.classList.add('active');
   progressFill.style.width = '10%';
 
@@ -25,6 +25,9 @@ async function loadModel() {
       'token-classification',
       'thomasbeste/modernbert-da-ner-base-onnx-int8',
       {
+        subfolder: '.',
+        model_file_name: 'model_quantized',
+        dtype: 'fp32',
         progress_callback: (progress) => {
           if (progress.status === 'progress' && progress.progress) {
             const pct = Math.round(progress.progress);
@@ -63,11 +66,6 @@ async function extractEntities() {
 
     const elapsed = performance.now() - start;
 
-    // Debug: log first 3 raw entities
-    for (let i = 0; i < Math.min(3, rawEntities.length); i++) {
-      console.log(`Raw entity [${i}]:`, JSON.stringify(rawEntities[i]));
-    }
-
     // Normalize + aggregate entities
     const entities = aggregateEntities(rawEntities, text);
 
@@ -103,9 +101,12 @@ function aggregateEntities(rawEntities, text) {
     const isCont = label.startsWith('I-');
     const entityType = label.replace(/^[BI]-/, '');
 
-    // Determine the token text — handle subword tokens (##prefix)
-    const isSubword = word.startsWith('##');
-    const cleanWord = isSubword ? word.slice(2) : word;
+    // Determine the token text — handle subword tokens
+    // BERT uses "##" prefix for subwords; ModernBERT uses leading space for word boundaries
+    const isBertSubword = word.startsWith('##');
+    const hasLeadingSpace = word.startsWith(' ');
+    const isSubword = isBertSubword;
+    const cleanWord = isBertSubword ? word.slice(2) : word.trimStart();
 
     // Use character offsets if available, otherwise build from words
     const hasOffsets = typeof tok.start === 'number' && typeof tok.end === 'number';
@@ -126,8 +127,10 @@ function aggregateEntities(rawEntities, text) {
         current.word = text.slice(current.start, tok.end);
         current.end = tok.end;
       } else {
-        // No offsets: concatenate words, subwords without space
-        current.word += isSubword ? cleanWord : (' ' + cleanWord);
+        // No offsets: subwords join directly, words join with space
+        // ModernBERT: leading space = new word, no space = subword continuation
+        const joiner = (isSubword || !hasLeadingSpace) ? '' : ' ';
+        current.word += joiner + cleanWord;
       }
       current.score = (current.score * current.tokenCount + score) / (current.tokenCount + 1);
       current.tokenCount++;

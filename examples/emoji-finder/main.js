@@ -72,6 +72,9 @@ async function initialize() {
   const start = performance.now();
 
   storeHandle = wasm.rvf_store_create(DIMENSION, 0); // cosine metric
+  if (storeHandle < 0) {
+    throw new Error(`Failed to create store (code: ${storeHandle})`);
+  }
 
   const numEmojis = EMOJIS.length;
   const vecBytes = numEmojis * DIMENSION * 4;
@@ -90,7 +93,10 @@ async function initialize() {
     idView[i] = BigInt(i);
   }
 
-  wasm.rvf_store_ingest(storeHandle, vecsPtr, idsPtr, numEmojis);
+  const ingested = wasm.rvf_store_ingest(storeHandle, vecsPtr, idsPtr, numEmojis);
+  if (ingested < 0) {
+    throw new Error(`Ingest failed (code: ${ingested})`);
+  }
   const loadTime = performance.now() - start;
 
   wasm.rvf_free(vecsPtr, vecBytes);

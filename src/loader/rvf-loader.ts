@@ -35,14 +35,12 @@ export async function fetchRvfCached(
     return { buffer, byteLength: buffer.byteLength, loadTimeMs: performance.now() - start };
   }
 
+  const start = performance.now();
   const response = await fetch(url);
   if (!response.ok) {
     throw new Error(`Failed to fetch RVF: ${response.status} ${response.statusText}`);
   }
-
   await cache.put(url, response.clone());
-
-  const start = performance.now();
   const buffer = await response.arrayBuffer();
   return { buffer, byteLength: buffer.byteLength, loadTimeMs: performance.now() - start };
 }
