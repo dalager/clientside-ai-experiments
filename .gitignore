@@ -1,2 +1,9 @@
 /dist
 /node_modules
+.claude/
+.claude-flow/
+.hive-mind/
+.swarm/
+.mcp.json
+CLAUDE.md
+test-results/
