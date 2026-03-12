@@ -34,6 +34,13 @@ plans/            Session notes and plans
 ## Future ideas
 
 Things to try next — all running client-side in the browser:
+### Image processing client-side
+
+Ruvector CNN samples:
+https://github.com/ruvnet/RuVector/tree/main/docs/cnn
+
+WASM and working. Extract other simple usecases.
+
 
 ### NLP & text
 
