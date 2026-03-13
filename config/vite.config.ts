@@ -12,6 +12,8 @@ export default defineConfig({
         emoji: resolve(__dirname, '../examples/emoji-finder/index.html'),
         ner: resolve(__dirname, '../examples/ner-extractor/index.html'),
         semanticSearch: resolve(__dirname, '../examples/semantic-search/index.html'),
+        ruvllm: resolve(__dirname, '../examples/ruvllm-wasm/index.html'),
+        rpsSona: resolve(__dirname, '../examples/rps-sona/index.html'),
       },
     },
   },
@@ -22,6 +24,6 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    exclude: ['@ruvector/rvf-wasm'],
+    exclude: ['@ruvector/rvf-wasm', '@ruvector/ruvllm-wasm'],
   },
 });

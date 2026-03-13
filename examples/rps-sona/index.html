@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rock Paper Scissors — SONA Adaptive AI</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, -apple-system, sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 1.5rem 1rem; }
+    h1 { font-size: 1.4rem; color: #f8fafc; }
+    .subtitle { color: #94a3b8; font-size: 0.82rem; margin-top: 0.25rem; text-align: center; max-width: 520px; line-height: 1.5; }
+    #status { margin: 0.75rem 0; font-size: 0.78rem; color: #64748b; }
+
+    .game-area { width: 100%; max-width: 780px; margin-top: 1rem; }
+
+    /* Scoreboard */
+    .scoreboard { display: flex; justify-content: center; gap: 2rem; margin-bottom: 1rem; }
+    .score-item { text-align: center; }
+    .score-label { font-size: 0.7rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; }
+    .score-value { font-size: 1.8rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .score-value.human { color: #22d3ee; }
+    .score-value.ai { color: #f472b6; }
+    .score-value.draw { color: #94a3b8; }
+
+    /* Move buttons */
+    .moves { display: flex; justify-content: center; gap: 1rem; margin: 1rem 0; }
+    .move-btn {
+      width: 100px; height: 100px; border-radius: 1rem; border: 2px solid #334155;
+      background: #1e293b; cursor: pointer; transition: all 0.15s;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.25rem;
+    }
+    .move-btn:hover { border-color: #6366f1; transform: translateY(-3px); box-shadow: 0 6px 20px rgba(99,102,241,0.15); }
+    .move-btn:active { transform: translateY(0); }
+    .move-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+    .move-btn .emoji { font-size: 2.2rem; }
+    .move-btn .label { font-size: 0.7rem; color: #94a3b8; }
+
+    /* Round result */
+    .round-result { text-align: center; min-height: 2.5rem; margin: 0.5rem 0; }
+    .round-result .outcome { font-size: 1.1rem; font-weight: 600; }
+    .round-result .detail { font-size: 0.78rem; color: #94a3b8; margin-top: 0.15rem; }
+    .round-result strong { color: #e2e8f0; }
+    .outcome.win { color: #34d399; }
+    .outcome.lose { color: #f87171; }
+    .outcome.draw { color: #94a3b8; }
+
+    /* Comparison layout */
+    .comparison { display: grid; grid-template-columns: 1fr 240px; gap: 1rem; margin-top: 1rem; }
+    @media (max-width: 700px) { .comparison { grid-template-columns: 1fr; } }
+
+    .charts-col { display: flex; flex-direction: column; gap: 1rem; }
+    .chart-panel { background: #1e293b; border: 1px solid #334155; border-radius: 0.75rem; padding: 1rem; }
+    .chart-panel h3 { font-size: 0.78rem; color: #94a3b8; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.04em; }
+    canvas { width: 100%; height: 130px; display: block; }
+
+    /* Metrics sidebar */
+    .metrics-col { display: flex; flex-direction: column; gap: 0.75rem; }
+    .metric-card {
+      background: #1e293b; border: 1px solid #334155; border-radius: 0.75rem; padding: 0.75rem;
+    }
+    .metric-card h4 {
+      font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em;
+      margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.4rem;
+    }
+    .metric-card h4 .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+    .metric-card.ngram h4 { color: #22d3ee; }
+    .metric-card.ngram .dot { background: #22d3ee; }
+    .metric-card.sona h4 { color: #a78bfa; }
+    .metric-card.sona .dot { background: #a78bfa; }
+    .metric-card.combined h4 { color: #f8fafc; }
+    .metric-card.combined .dot { background: #f8fafc; }
+    .metric-row {
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 0.72rem; padding: 0.15rem 0; color: #94a3b8;
+    }
+    .metric-row .mv { font-weight: 600; color: #e2e8f0; font-variant-numeric: tabular-nums; }
+
+    /* Engine stats */
+    .engine-stats {
+      background: #1e293b; border: 1px solid #334155; border-radius: 0.75rem; padding: 0.75rem;
+    }
+    .engine-stats h4 { font-size: 0.7rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.4rem; }
+
+    /* Info panel */
+    .info { background: #1e293b; border: 1px solid #334155; border-radius: 0.75rem; padding: 1rem; margin-top: 1rem; font-size: 0.78rem; color: #94a3b8; line-height: 1.6; }
+    .info strong { color: #e2e8f0; }
+  </style>
+</head>
+<body>
+  <h1>Rock Paper Scissors</h1>
+  <p class="subtitle">Play against an AI that learns your patterns in real-time using SONA adaptive learning, running entirely in-browser via WebAssembly.</p>
+  <div id="status">Loading WASM module...</div>
+
+  <div class="game-area">
+    <div class="scoreboard">
+      <div class="score-item"><div class="score-value human" id="human-score">0</div><div class="score-label">You</div></div>
+      <div class="score-item"><div class="score-value draw" id="draw-score">0</div><div class="score-label">Draw</div></div>
+      <div class="score-item"><div class="score-value ai" id="ai-score">0</div><div class="score-label">AI</div></div>
+    </div>
+
+    <div class="moves">
+      <button class="move-btn" id="btn-rock" disabled><span class="emoji">&#x1FAA8;</span><span class="label">Rock</span></button>
+      <button class="move-btn" id="btn-paper" disabled><span class="emoji">&#x1F4C4;</span><span class="label">Paper</span></button>
+      <button class="move-btn" id="btn-scissors" disabled><span class="emoji">&#x2702;&#xFE0F;</span><span class="label">Scissors</span></button>
+    </div>
+
+    <div class="round-result" id="round-result"></div>
+
+    <div class="comparison">
+      <div class="charts-col">
+        <div class="chart-panel">
+          <h3>Rolling accuracy (last 20 rounds)</h3>
+          <canvas id="accuracy-chart" height="130"></canvas>
+        </div>
+        <div class="chart-panel">
+          <h3>Cumulative accuracy (all time)</h3>
+          <canvas id="cumulative-chart" height="130"></canvas>
+        </div>
+      </div>
+
+      <div class="metrics-col">
+        <div class="metric-card ngram">
+          <h4><span class="dot"></span> N-gram predictor</h4>
+          <div class="metric-row"><span>Accuracy</span><span class="mv" id="m-ngram-acc">-</span></div>
+          <div class="metric-row"><span>Correct / tried</span><span class="mv" id="m-ngram-hits">0/0</span></div>
+          <div class="metric-row"><span>Coverage</span><span class="mv" id="m-ngram-coverage">-</span></div>
+          <div class="metric-row"><span>Last prediction</span><span class="mv" id="m-ngram-pick">-</span></div>
+        </div>
+
+        <div class="metric-card sona">
+          <h4><span class="dot"></span> SONA LoRA</h4>
+          <div class="metric-row"><span>Accuracy</span><span class="mv" id="m-sona-acc">-</span></div>
+          <div class="metric-row"><span>Correct / tried</span><span class="mv" id="m-sona-hits">0/0</span></div>
+          <div class="metric-row"><span>Coverage</span><span class="mv" id="m-sona-coverage">-</span></div>
+          <div class="metric-row"><span>Last prediction</span><span class="mv" id="m-sona-pick">-</span></div>
+        </div>
+
+        <div class="metric-card combined">
+          <h4><span class="dot"></span> Combined (game)</h4>
+          <div class="metric-row"><span>Accuracy</span><span class="mv" id="m-combined-acc">-</span></div>
+          <div class="metric-row"><span>Round</span><span class="mv" id="m-round">0</span></div>
+        </div>
+
+        <div class="engine-stats">
+          <h4>SONA engine</h4>
+          <div class="metric-row"><span>Learn cycles</span><span class="mv" id="m-learn-cycles">0</span></div>
+          <div class="metric-row"><span>Trajectories buf.</span><span class="mv" id="m-trajectories">0</span></div>
+          <div class="metric-row"><span>Patterns stored</span><span class="mv" id="m-patterns">0</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="info">
+      <strong>How it works:</strong> Two prediction systems work together:
+      (1) An <strong>n-gram frequency predictor</strong> (cyan) tracks what you play after specific move sequences (window sizes 1-5).
+      (2) The <strong>full SONA engine</strong> (purple, 227 KB WASM) records each round as a trajectory, trains
+      two-tier LoRA weights (micro + base) with EWC++ memory preservation, and transforms context
+      embeddings via <code>applyLora()</code> to predict your next move.
+      The <strong>combined</strong> predictor (white dashed) uses n-gram when available, falls back to SONA, then random.
+      <br><br>
+      <strong>Tip:</strong> Try repeating a pattern (e.g. rock-rock-paper-rock-rock-paper) and watch
+      the AI catch on. Then switch strategies and see the accuracy dip before it re-adapts.
+    </div>
+  </div>
+
+  <script type="module" src="./main.js"></script>
+</body>
+</html>

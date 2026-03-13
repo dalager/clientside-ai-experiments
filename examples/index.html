@@ -185,11 +185,50 @@
         <span class="tag">dansk</span>
       </div>
     </a>
+
+    <a class="card" href="./ruvllm-wasm/">
+      <div class="card-header">
+        <span class="card-icon">&#x1F9E0;</span>
+        <span class="card-title">RuvLLM WASM</span>
+      </div>
+      <p class="card-desc">
+        Browser-native LLM toolkit — chat template formatting (Llama3, Mistral, ChatML, Phi, Gemma),
+        HNSW semantic routing, and MicroLoRA adaptation, all running in ~150 KB of WebAssembly.
+      </p>
+      <div class="card-tags">
+        <span class="tag">WASM</span>
+        <span class="tag">LLM</span>
+        <span class="tag">HNSW</span>
+        <span class="tag">chat templates</span>
+        <span class="tag">semantic routing</span>
+      </div>
+    </a>
+
+    <a class="card" href="./rps-sona/">
+      <div class="card-header">
+        <span class="card-icon">&#x1FAA8;</span>
+        <span class="card-title">Rock Paper Scissors (N-gram vs SONA)</span>
+      </div>
+      <p class="card-desc">
+        Play against two competing AI predictors: an n-gram frequency counter and a SONA
+        adaptive learner (227 KB WASM). Both predict your next move independently &mdash;
+        live charts and per-model metrics let you compare how they learn differently.
+      </p>
+      <div class="card-tags">
+        <span class="tag">WASM</span>
+        <span class="tag">SONA</span>
+        <span class="tag">n-gram</span>
+        <span class="tag">k-NN</span>
+        <span class="tag">LoRA</span>
+        <span class="tag">game AI</span>
+      </div>
+    </a>
   </div>
 
   <div class="footer">
     All demos run entirely in your browser.<br>
-    Powered by <a href="https://github.com/ruvnet/ruvector">@ruvector/rvf-wasm</a>
+    Powered by <a href="https://github.com/ruvnet/ruvector">@ruvector/rvf-wasm</a>,
+    <a href="https://www.npmjs.com/package/@ruvector/ruvllm-wasm">@ruvector/ruvllm-wasm</a>
     and <a href="https://huggingface.co/docs/transformers.js">Transformers.js</a>
   </div>
 </body>
