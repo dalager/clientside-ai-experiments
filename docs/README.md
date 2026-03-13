@@ -152,6 +152,28 @@ const count = wasm.rvf_store_query(handle, queryPtr, k, 0, outPtr);
 wasm.rvf_store_close(handle);
 ```
 
+## Experiments
+
+All demos run at `http://localhost:5173/` after `npm run dev`. Each is self-contained in `examples/`.
+
+| Demo | Path | What it does | Key tech |
+|------|------|-------------|----------|
+| **Vector Search** | `/vanilla/` | Sub-ms nearest-neighbor search over 1,000 vectors | HNSW, RVF WASM (42 KB) |
+| **Emoji Finder** | `/emoji-finder/` | Semantic emoji search by meaning | Feature hashing, cosine similarity |
+| **Dansk NER** | `/ner-extractor/` | Danish named entity recognition in-browser | ModernBERT (144 MB), ONNX, Transformers.js |
+| **Dansk Filmsogning** | `/semantic-search/` | Semantic search over Danish films | gte-small (33 MB), ONNX |
+| **RuvLLM WASM** | `/ruvllm-wasm/` | LLM chat templates, HNSW routing, MicroLoRA | WASM (150 KB) |
+| **Rock Paper Scissors** | `/rps-sona/` | Two AI predictors compete to read your patterns | N-gram + SONA WASM (227 KB) |
+
+### Rock Paper Scissors — N-gram vs SONA
+
+The RPS experiment pits two fundamentally different prediction approaches against each other:
+
+- **N-gram frequency predictor** tracks what you play after specific move sequences (window sizes 1-5). It is fast, transparent, and very accurate on repetitive play.
+- **SONA adaptive learner** encodes game states as 15-dimensional vectors, stores patterns via a WASM EphemeralAgent, and predicts using k-nearest-neighbor search plus a learned LoRA weight matrix. It has higher coverage and generalizes better to varied play.
+
+Both predict independently on every round. Live charts and per-model metrics (accuracy, coverage, correct/tried) let you compare how they learn differently. See [`examples/rps-sona/RPS_ALGO_EXPLAINER.md`](../examples/rps-sona/RPS_ALGO_EXPLAINER.md) for a detailed comparison.
+
 ## Project Structure
 
 ```
@@ -168,9 +190,12 @@ wasmllm/
 │   ├── search/              # Distance metric tests
 │   └── e2e/                 # Playwright browser tests
 ├── examples/
-│   └── vanilla/             # Minimal HTML + JS demo
-│       ├── index.html
-│       └── main.js
+│   ├── vanilla/             # Vector search demo
+│   ├── emoji-finder/        # Semantic emoji search
+│   ├── ner-extractor/       # Danish NER
+│   ├── semantic-search/     # Danish film search
+│   ├── ruvllm-wasm/         # LLM toolkit demo
+│   └── rps-sona/            # Rock Paper Scissors (N-gram vs SONA)
 ├── dist/                    # Compiled output
 └── docs/                    # Documentation
 ```
