@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RuvLLM WASM — Browser LLM Toolkit</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, -apple-system, sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 2rem; }
+    h1 { font-size: 1.5rem; margin-bottom: 0.25rem; color: #f8fafc; }
+    .subtitle { color: #94a3b8; margin-bottom: 2rem; font-size: 0.875rem; }
+
+    .panels { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; width: 100%; max-width: 900px; }
+    @media (max-width: 700px) { .panels { grid-template-columns: 1fr; } }
+
+    .panel { background: #1e293b; border: 1px solid #334155; border-radius: 0.75rem; padding: 1.25rem; }
+    .panel h2 { font-size: 1rem; color: #a5b4fc; margin-bottom: 0.75rem; }
+    .panel-full { grid-column: 1 / -1; }
+
+    #status { margin: 1rem 0; font-size: 0.8rem; color: #64748b; text-align: center; }
+
+    pre, .output { background: #0f172a; border: 1px solid #334155; border-radius: 0.5rem; padding: 0.75rem; font-family: 'Cascadia Code', 'Fira Code', monospace; font-size: 0.8rem; color: #e2e8f0; white-space: pre-wrap; word-break: break-word; max-height: 250px; overflow-y: auto; line-height: 1.5; }
+
+    label { display: block; font-size: 0.8rem; color: #94a3b8; margin-bottom: 0.35rem; }
+    select, input[type="text"], textarea {
+      width: 100%; padding: 0.5rem 0.75rem; border-radius: 0.4rem;
+      border: 1px solid #334155; background: #0f172a; color: #f1f5f9;
+      font-size: 0.85rem; outline: none; transition: border-color 0.2s;
+      font-family: inherit;
+    }
+    select:focus, input:focus, textarea:focus { border-color: #6366f1; }
+
+    button {
+      margin-top: 0.5rem; padding: 0.45rem 1rem; border-radius: 0.4rem;
+      border: none; background: #6366f1; color: #fff; font-size: 0.85rem;
+      cursor: pointer; transition: background 0.2s;
+    }
+    button:hover { background: #4f46e5; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .badge { display: inline-block; padding: 0.1rem 0.5rem; border-radius: 9999px; font-size: 0.7rem; font-weight: 600; }
+    .badge-ok { background: #064e3b; color: #34d399; }
+    .badge-err { background: #7f1d1d; color: #fca5a5; }
+  </style>
+</head>
+<body>
+  <h1>RuvLLM WASM</h1>
+  <p class="subtitle">Chat templates, MicroLoRA adaptation, SONA learning — all in-browser via WebAssembly (~150 KB gzipped)</p>
+  <div id="status">Initializing WASM module...</div>
+
+  <div class="panels">
+    <!-- What is this -->
+    <div class="panel panel-full">
+      <h2>What is this?</h2>
+      <div style="font-size:0.82rem;color:#94a3b8;line-height:1.6">
+        <p>
+          <code>@ruvector/ruvllm-wasm</code> is an <strong>LLM orchestration toolkit</strong> that runs
+          entirely in the browser via WebAssembly (~150 KB gzipped). Despite the name, it does
+          <strong>not</strong> load or run language models &mdash; there is no generate/predict API in
+          the WASM build. Instead it provides supporting infrastructure for LLM-based applications:
+        </p>
+        <ul style="margin:0.5rem 0 0.5rem 1.25rem">
+          <li><strong>Chat template formatting</strong> &mdash; correctly format prompts for Llama 3,
+              Mistral, ChatML, Phi, and Gemma model families before sending them to an API.</li>
+          <li><strong>MicroLoRA</strong> &mdash; sub-millisecond low-rank vector adaptation with
+              quality-based feedback. Building block for client-side agent routing.</li>
+          <li><strong>SONA Instant Learning</strong> &mdash; EMA quality tracking, pattern recording,
+              and adaptive rank adjustment for continuous improvement loops.</li>
+          <li><strong>KV Cache &amp; memory management</strong> &mdash; two-tier cache (FP32 tail +
+              u8 quantized store), arena allocator, and buffer pool for building inference pipelines
+              with WebGPU or ONNX Runtime.</li>
+        </ul>
+        <p style="margin-top:0.5rem">
+          <strong>Known issue:</strong> the HNSW semantic router (<code>HnswRouterWasm.addPattern</code>)
+          panics in v2.0.0 &mdash; this appears to be a bug in the published WASM binary.
+        </p>
+        <p style="margin-top:0.5rem;font-size:0.75rem;color:#64748b">
+          For actual in-browser model inference, see
+          <a href="https://github.com/nicklove/web-llm" style="color:#6366f1">WebLLM</a> (WebGPU) or
+          <a href="https://huggingface.co/docs/transformers.js" style="color:#6366f1">Transformers.js</a> (ONNX).
+          Package source:
+          <a href="https://github.com/ruvnet/RuVector/tree/main/crates/ruvllm-wasm" style="color:#6366f1">ruvnet/RuVector</a>.
+        </p>
+      </div>
+    </div>
+
+    <!-- Health check -->
+    <div class="panel">
+      <h2>Health Check</h2>
+      <div id="health-output" class="output"></div>
+    </div>
+
+    <!-- MicroLoRA -->
+    <div class="panel">
+      <h2>MicroLoRA Adaptation</h2>
+      <p style="font-size:0.75rem;color:#64748b;margin-bottom:0.5rem">
+        Sub-millisecond low-rank model adaptation (rank 2, 64-dim)
+      </p>
+      <div id="lora-output" class="output"></div>
+    </div>
+
+    <!-- Chat Templates -->
+    <div class="panel panel-full">
+      <h2>Chat Templates</h2>
+      <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:0.75rem">
+        <div style="flex:0 0 auto">
+          <label for="template-select">Template</label>
+          <select id="template-select" disabled>
+            <option value="llama3">Llama 3</option>
+            <option value="mistral">Mistral</option>
+            <option value="chatml">ChatML</option>
+            <option value="phi">Phi</option>
+            <option value="gemma">Gemma</option>
+          </select>
+        </div>
+        <div style="flex:1;min-width:200px">
+          <label for="system-msg">System message</label>
+          <input type="text" id="system-msg" value="You are a helpful assistant." disabled>
+        </div>
+        <div style="flex:1;min-width:200px">
+          <label for="user-msg">User message</label>
+          <input type="text" id="user-msg" value="What is WebAssembly?" disabled>
+        </div>
+        <div style="display:flex;align-items:flex-end">
+          <button id="format-btn" disabled>Format</button>
+        </div>
+      </div>
+      <pre id="template-output"></pre>
+    </div>
+
+    <!-- SONA -->
+    <div class="panel panel-full">
+      <h2>SONA Instant Learning</h2>
+      <p style="font-size:0.75rem;color:#64748b;margin-bottom:0.5rem">
+        EMA quality tracking + adaptive rank adjustment for continuous model improvement
+      </p>
+      <div id="sona-output" class="output"></div>
+    </div>
+  </div>
+
+  <script type="module" src="./main.js"></script>
+</body>
+</html>

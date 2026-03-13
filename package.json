@@ -23,6 +23,7 @@
   "description": "Browser-native semantic search powered by WASM + RVF",
   "dependencies": {
     "@huggingface/transformers": "^3.8.1",
+    "@ruvector/ruvllm-wasm": "^2.0.0",
     "@ruvector/rvf-wasm": "^0.1.6"
   },
   "devDependencies": {
