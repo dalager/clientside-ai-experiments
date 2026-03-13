@@ -10,6 +10,7 @@ Client-side AI playground — browser-native ML demos powered by WebAssembly. No
 | [Emoji Finder](examples/emoji-finder/) | Semantic emoji search — type a feeling or concept and find matching emojis by meaning, not keywords | Feature hashing + WASM HNSW |
 | [Semantic Search](examples/semantic-search/) | Semantic movie search in Danish — type a description and find matching films by meaning using in-browser embeddings | Transformers.js (gte-small) |
 | [Dansk NER](examples/ner-extractor/) | Find persons, organizations and locations in Danish text using a ModernBERT model (~144 MB) running entirely in-browser | Transformers.js + ONNX Runtime |
+| [Rock Paper Scissors](examples/rps-sona/) | Play RPS against an adaptive AI that learns your patterns in real-time using ruvnet's [SONA](https://github.com/ruvnet/RuVector/tree/main/crates/sona) self-optimizing neural architecture in WASM | [SONA](https://github.com/ruvnet/RuVector/tree/main/crates/sona) + WASM |
 
 
 ## Quick start
